@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tambour Vivant, le batteur qui sent l’ambiance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --l1:#8B7BEA; --l2:#2FC9A4; --l3:#FFB43B; --l4:#FF7A2F; --l5:#E8344E;
+  --bg:#F7F2FF; --surface:#FFFFFF; --surface-2:#EFE7FF; --text:#1C1442; --muted:#5E5390;
+  --ring-off:#E2D8FA; --skin:#FFFFFF; --line:#E4DBFB; --primary:#FFB43B; --on-primary:#1C1442;
+  --c:var(--l1); --glow:20%;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#140E33; --surface:#1F1750; --surface-2:#2A2066; --text:#FFF4E3; --muted:#B6AAE8;
+    --ring-off:#2E2470; --skin:#241B5C; --line:#30266F;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#140E33; --surface:#1F1750; --surface-2:#2A2066; --text:#FFF4E3; --muted:#B6AAE8;
+  --ring-off:#2E2470; --skin:#241B5C; --line:#30266F;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; color:var(--text);
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background:
+    radial-gradient(900px 520px at 25% -8%, color-mix(in srgb,var(--c) 22%,transparent), transparent 70%),
+    var(--bg);
+  min-height:100vh;
+}
+.pagne{
+  height:12px;
+  background:repeating-linear-gradient(90deg,
+    var(--l5) 0 22px, var(--l3) 22px 34px, var(--text) 34px 40px,
+    var(--l2) 40px 58px, var(--l3) 58px 64px, var(--l1) 64px 84px, var(--l4) 84px 92px);
+}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 20px 56px}
+h1{
+  font-size:clamp(2.5rem,7.5vw,4.4rem); font-weight:800; letter-spacing:-0.025em;
+  line-height:.95; margin:0; font-variation-settings:"opsz" 96;
+}
+.lead{font-size:1.15rem;color:var(--muted);max-width:32em;margin:.7rem 0 0;line-height:1.45}
+
+.grid{display:grid;gap:28px;margin-top:26px}
+@media (min-width:880px){.grid{grid-template-columns:1.15fr 1fr;align-items:start}}
+
+.stage{text-align:center;padding:8px 0}
+.drum{position:relative;width:min(80vw,380px);aspect-ratio:1;margin:10px auto 0}
+.drum::before{
+  content:"";position:absolute;inset:-14%;border-radius:50%;
+  background:radial-gradient(circle, color-mix(in srgb,var(--c) var(--glow),transparent) 0%, transparent 66%);
+  transition:background .7s;
+}
+.ring{position:absolute;border-radius:50%;border:3px solid var(--ring-off);transition:border-color .5s, box-shadow .2s}
+.ring.on{border-color:var(--c)}
+.skin{
+  position:absolute;inset:25%;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 38% 30%, color-mix(in srgb,var(--c) 48%,var(--skin)), var(--skin) 74%);
+  box-shadow:inset 0 -10px 26px color-mix(in srgb,var(--c) 30%,transparent), 0 0 0 7px color-mix(in srgb,var(--c) 32%,transparent);
+  transition:transform .09s ease-out, background .6s, box-shadow .6s;
+}
+.drum.beat .skin{transform:scale(1.05)}
+.drum.beat .ring.on{box-shadow:0 0 20px color-mix(in srgb,var(--c) 60%,transparent)}
+.num{font-size:clamp(3rem,12vw,4.6rem);font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.name{font-weight:700;font-size:1.12rem;margin-top:4px}
+
+.hint{min-height:3em;color:var(--muted);max-width:27em;margin:20px auto 0;font-size:1.05rem;line-height:1.45}
+.tempo{display:flex;align-items:baseline;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:4px}
+.bpm{font-size:2.6rem;font-weight:800;font-variant-numeric:tabular-nums}
+.bpm-unit{font-weight:600}
+.src{width:100%;font-size:.92rem;color:var(--muted);margin-top:-4px}
+
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+.go{
+  background:var(--primary);color:var(--on-primary);border:0;border-radius:999px;
+  padding:18px 36px;font:inherit;font-size:1.22rem;font-weight:700;cursor:pointer;
+  box-shadow:0 12px 30px -12px color-mix(in srgb,var(--primary) 85%,transparent);
+}
+body.live .go{background:var(--l5);color:#fff;box-shadow:0 12px 30px -12px color-mix(in srgb,var(--l5) 85%,transparent)}
+.ghost{
+  background:transparent;color:var(--text);border:2px solid var(--line);border-radius:999px;
+  padding:16px 26px;font:inherit;font-size:1.02rem;font-weight:600;cursor:pointer;
+}
+.status{min-height:1.5em;margin:16px auto 0;font-weight:600;max-width:30em;line-height:1.4}
+button{-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible{outline:3px solid var(--l2);outline-offset:3px}
+
+.panel{background:var(--surface);border-radius:28px;padding:24px 22px;border:1px solid var(--line)}
+.panel h2{font-size:1.08rem;font-weight:700;margin:26px 0 12px}
+.panel h2:first-child{margin-top:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  border:2px solid var(--line);background:var(--surface-2);color:var(--text);
+  border-radius:999px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;
+}
+.chip[aria-checked="true"]{background:var(--text);color:var(--bg);border-color:var(--text)}
+.style-desc{color:var(--muted);margin:10px 0 0;font-size:.96rem;line-height:1.4}
+
+.meter{display:grid;grid-template-columns:9.6em 1fr;align-items:center;gap:12px;margin:9px 0;font-size:.96rem}
+.bar{height:10px;border-radius:5px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--l2);border-radius:5px;transition:width .2s}
+.bar.total{height:16px;border-radius:8px}
+.bar.total i{background:var(--c);border-radius:8px}
+
+.cmds{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cmd{
+  padding:15px 12px;border-radius:16px;border:0;background:var(--surface-2);color:var(--text);
+  font:inherit;font-size:1rem;font-weight:700;cursor:pointer;transition:transform .08s;
+}
+.cmd.up{background:color-mix(in srgb,var(--l4) 26%,var(--surface-2))}
+.cmd.down{background:color-mix(in srgb,var(--l2) 26%,var(--surface-2))}
+.cmd:active,.cmd.flash{transform:scale(.96)}
+.cmd.flash{background:color-mix(in srgb,var(--l3) 45%,var(--surface-2))}
+
+.switch{display:flex;align-items:center;gap:12px;margin-top:16px;font-weight:600;cursor:pointer}
+.switch input{position:absolute;opacity:0;width:1px;height:1px}
+.track{width:48px;height:28px;border-radius:14px;background:var(--ring-off);position:relative;transition:background .2s;flex:none}
+.track::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.switch input:checked + .track{background:var(--l2)}
+.switch input:checked + .track::after{transform:translateX(20px)}
+.switch input:focus-visible + .track{outline:3px solid var(--l2);outline-offset:3px}
+.hold{min-height:1.3em;color:var(--muted);font-size:.92rem;margin:8px 0 0}
+.vol{display:block;margin-top:18px;font-weight:600}
+.vol input{width:100%;margin-top:8px;accent-color:var(--l3)}
+
+.how{margin-top:52px}
+.how h2{font-size:clamp(1.6rem,4vw,2.2rem);font-weight:800;margin:0 0 18px;letter-spacing:-0.01em}
+.how ol{list-style:none;padding:0;margin:0;display:grid;gap:22px;counter-reset:s}
+@media (min-width:760px){.how ol{grid-template-columns:repeat(3,1fr)}}
+.how li{counter-increment:s;padding-top:12px;border-top:5px solid var(--l2);line-height:1.5;max-width:30em}
+.how li:nth-child(2){border-color:var(--l3)}
+.how li:nth-child(3){border-color:var(--l5)}
+.how li::before{content:counter(s);display:block;font-size:2.3rem;font-weight:800;line-height:1.1;margin-bottom:4px}
+.tip{color:var(--muted);margin-top:24px;max-width:46em;line-height:1.5}
+
+
+.note{color:var(--muted);font-size:.92rem;margin:10px 0 0;line-height:1.4}
+.cam-row{display:flex;align-items:center;gap:14px;margin-top:6px;flex-wrap:wrap}
+.cam-btn{border:2px solid var(--line);background:var(--surface-2);color:var(--text);border-radius:999px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer}
+.cam-btn[aria-pressed="true"]{background:var(--l2);color:#123;border-color:var(--l2)}
+#cam{width:120px;height:90px;border-radius:12px;object-fit:cover;background:var(--surface-2);display:none}
+#cam.on{display:block}
+.cmd.pause[aria-pressed="true"]{background:color-mix(in srgb,var(--l1) 45%,var(--surface-2))}
+@media (prefers-reduced-motion:reduce){
+  .drum.beat .skin{transform:none}
+  .ring,.skin,.bar i,.cmd,.track,.track::after{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="pagne" aria-hidden="true"></div>
+<main class="wrap">
+  <header>
+    <h1>Tambour Vivant</h1>
+    <p class="lead">Le batteur virtuel qui écoute la salle et entre au bon moment, à l’église comme en fête.</p>
+  </header>
+
+  <div class="grid">
+    <section class="stage" aria-label="Ambiance en direct">
+      <div class="drum" id="drum" aria-hidden="true">
+        <div class="ring" style="inset:0%"></div>
+        <div class="ring" style="inset:5%"></div>
+        <div class="ring" style="inset:10%"></div>
+        <div class="ring" style="inset:15%"></div>
+        <div class="ring" style="inset:20%"></div>
+        <div class="skin"><span class="num" id="lvlNum">1</span><span class="name" id="lvlName">En attente</span></div>
+      </div>
+      <p class="hint" id="lvlHint" aria-live="polite"></p>
+      <div class="tempo">
+        <span class="bpm" id="bpm">112</span><span class="bpm-unit">battements par minute</span>
+        <span class="src" id="bpmSrc">Tempo de départ du style</span>
+      </div>
+      <div class="actions">
+        <button class="go" id="goBtn" type="button">Démarrer l’écoute</button>
+        <button class="ghost" id="demoBtn" type="button">Essayer sans micro</button>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <aside class="panel">
+      <h2>Style de musique</h2>
+      <div class="chips" role="radiogroup" aria-label="Style de musique" id="chips">
+        <button class="chip" type="button" role="radio" data-style="louange">Louange africaine</button>
+        <button class="chip" type="button" role="radio" data-style="gospel">Gospel</button>
+        <button class="chip" type="button" role="radio" data-style="adoration">Adoration douce</button>
+        <button class="chip" type="button" role="radio" data-style="fete">Fête</button>
+      </div>
+      <p class="style-desc" id="styleDesc"></p>
+
+      <h2>Sensibilité</h2>
+      <div class="chips" role="radiogroup" aria-label="Sensibilité" id="sensChips">
+        <button class="chip" type="button" role="radio" data-sens="0.9">Faible</button>
+        <button class="chip" type="button" role="radio" data-sens="1.15">Normale</button>
+        <button class="chip" type="button" role="radio" data-sens="1.4">Forte</button>
+      </div>
+      <p class="note">Faible pour une petite salle ou un lieu bruyant, forte pour une grande église où le son se perd.</p>
+
+      <h2>Voir la salle</h2>
+      <div class="cam-row">
+        <button class="cam-btn" id="camBtn" type="button" aria-pressed="false">Activer la caméra</button>
+        <video id="cam" muted playsinline aria-label="Aperçu de la caméra"></video>
+      </div>
+      <p class="note">Tournez le téléphone vers l’assemblée : la batterie sent quand les gens bougent et dansent. L’image reste dans le téléphone, rien n’est enregistré.</p>
+
+      <h2>Ce que la batterie entend</h2>
+      <div class="meter"><span>Volume de la salle</span><div class="bar"><i id="mLoud"></i></div></div>
+      <div class="meter"><span>Mains et attaques</span><div class="bar"><i id="mClap"></i></div></div>
+      <div class="meter"><span>Voix ensemble</span><div class="bar"><i id="mCrowd"></i></div></div>
+      <div class="meter"><span>Mouvement</span><div class="bar"><i id="mMove"></i></div></div>
+      <div class="meter"><span>Rythme</span><div class="bar"><i id="mMusic"></i></div></div>
+      <div class="meter"><span><strong>Ambiance</strong></span><div class="bar total"><i id="mEnergy"></i></div></div>
+
+      <h2>Vos commandes</h2>
+      <div class="cmds">
+        <button class="cmd up" id="upBtn" type="button">Faire monter</button>
+        <button class="cmd down" id="downBtn" type="button">Calmer</button>
+        <button class="cmd" id="tapBtn" type="button">Taper le tempo</button>
+        <button class="cmd pause" id="cutBtn" type="button" aria-pressed="false">Pause prédication</button>
+      </div>
+      <p class="note">Pour caler la batterie sur la louange, appuyez 4 fois sur « Taper le tempo », bien en rythme avec le chant.</p>
+      <label class="switch"><input type="checkbox" id="auto" checked><span class="track"></span><span>Mode automatique</span></label>
+      <p class="hold" id="hold"></p>
+      <label class="vol">Volume de la batterie<input type="range" id="vol" min="0" max="100" value="80"></label>
+    </aside>
+  </div>
+
+  <section class="how">
+    <h2>Comment l’utiliser</h2>
+    <ol>
+      <li>Posez le téléphone près du chantre ou de l’assemblée, loin des baffles, pour que la batterie n’écoute pas son propre son.</li>
+      <li>Choisissez le style et la sensibilité. Si vous voulez qu’elle voie la salle, activez la caméra et tournez le téléphone vers l’assemblée.</li>
+      <li>Appuyez sur « Démarrer l’écoute » et laissez la salle calme 4 secondes. Tapez ensuite le tempo 4 fois en rythme avec le chant. Pendant la prière ou le sermon, appuyez sur « Pause prédication ».</li>
+    </ol>
+    <p class="tip">Pour faire sonner la batterie dans toute la salle, branchez la sortie casque du téléphone sur la console de sono. Ce prototype sert à tester l’idée en conditions réelles : le son est encore simple, et la détection apprend à chaque essai.</p>
+  </section>
+</main>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+
+const STYLES = {
+  louange:{desc:'Djembé, shaker et mains, avec une grosse caisse qui pousse.', bpm:112, min:88, max:144, fill:'slap', tracks:[
+    ['shaker',2,'x.o.x.o.x.o.x.o.'],['kick',2,'X.....x...X.....'],['djembe',3,'x..x..x.x..x.x..'],
+    ['clap',3,'....X.......X...'],['hat',4,'x.xx.xx.x.xx.xx.'],['snare',4,'....X.......X...'],
+    ['kick',5,'..x.....x.x.....'],['slap',5,'.x.....x.x...x.x']]},
+  gospel:{desc:'Charleston régulier, caisse claire sur 2 et 4, notes fantômes quand ça monte.', bpm:96, min:70, max:130, fill:'tom', tracks:[
+    ['hat',2,'x.o.x.o.x.o.x.o.'],['kick',2,'X......x..X.....'],['snare',3,'....X.......X...'],
+    ['hat',4,'.o.o.o.o.o.o.o.o'],['ghost',4,'..x....x.x....x.'],['ohat',5,'......x.......x.'],
+    ['kick',5,'...x......x..x..']]},
+  adoration:{desc:'Peu de coups, beaucoup d’espace : la batterie soutient sans couvrir les voix.', bpm:72, min:56, max:96, fill:'tom', tracks:[
+    ['shaker',2,'x...x...x...x...'],['kick',3,'X.......X.......'],['rim',3,'....x.......x...'],
+    ['hat',4,'x.x.x.x.x.x.x.x.'],['snare',5,'....X.......X...'],['kick',5,'......x.......x.']]},
+  fete:{desc:'Grosse caisse sur chaque temps, congas et claps : de quoi faire danser la salle.', bpm:120, min:96, max:140, fill:'slap', tracks:[
+    ['hat',2,'x.x.x.x.x.x.x.x.'],['kick',2,'X...X...X...X...'],['clap',3,'....X.......X...'],
+    ['djembe',3,'..x..x.x..x..x.x'],['shaker',4,'xoxoxoxoxoxoxoxo'],['ohat',4,'..x...x...x...x.'],
+    ['snare',5,'...x..x....x..x.']]}
+};
+const VEL = {X:1, x:.65, o:.35};
+const GAIN = [0,0,.55,.72,.88,1];
+const LEVELS = [null,
+  {name:'En attente', hint:'Le chantre est seul : la batterie écoute et attend son moment.'},
+  {name:'Ça démarre', hint:'Quelques voix suivent : un rythme léger se pose.'},
+  {name:'Ça monte', hint:'L’assemblée entre : les percussions et les mains arrivent.'},
+  {name:'Ça chauffe', hint:'Tout le monde chante : la batterie complète entre.'},
+  {name:'Le feu !', hint:'La salle est debout : roulements, cymbales, tout donne.'}];
+
+const store = {
+  get(k){ try { return localStorage.getItem(k); } catch(e) { return null; } },
+  set(k,v){ try { localStorage.setItem(k,v); } catch(e) {} }
+};
+let style = STYLES[store.get('tv-style')] ? store.get('tv-style') : 'louange';
+let sens = parseFloat(store.get('tv-sens')) || 1.15;
+let bpm = STYLES[style].bpm, bpmSource = 'style';
+let level = 1, target = 1, justEntered = false;
+let ctx = null, master, drumBus, noiseBuf;
+let running = false, mode = null, step = 0, bar = 0, nextTime = 0;
+let schedTimer = null, anaTimer = null, tempoTimer = null;
+let stream = null, analyser = null, tbuf, fbuf, prev;
+let autoMode = true, holdUntil = 0, tapLockUntil = 0, taps = [], paused = false;
+let energy = 0, music = 0, lastCand = 1, candSince = 0, demoT = 0;
+let meters = {loud:0, clap:0, crowd:0, move:0};
+let envVals = [], envTimes = [], hHist = [], clapTimes = [], lastClap = 0;
+let floorDb = -60, peakDb = -30, lastLoud = 0;
+let calibrating = false, calibStart = 0, calibDbs = [];
+let camOn = false, vStream = null, camTimer = null, prevFrame = null, moveVal = 0;
+let wakeLock = null;
+
+const drum = $('drum'), rings = [...drum.querySelectorAll('.ring')];
+const status = msg => { $('status').textContent = msg; };
+const clamp = x => Math.min(1, Math.max(0, x));
+
+/* ---------- Affichage ---------- */
+function setLevelUI(){
+  const root = document.documentElement;
+  root.style.setProperty('--c', `var(--l${level})`);
+  root.style.setProperty('--glow', `${10 + level * 9}%`);
+  rings.forEach((r,i) => r.classList.toggle('on', level >= 5 - i));
+  $('lvlNum').textContent = level;
+  $('lvlName').textContent = paused ? 'Pause' : LEVELS[level].name;
+  $('lvlHint').textContent = paused ? 'Prière ou prédication : la batterie se tait et attend la reprise.' : LEVELS[level].hint;
+}
+function setStyleUI(){
+  document.querySelectorAll('#chips .chip').forEach(c => c.setAttribute('aria-checked', c.dataset.style === style));
+  $('styleDesc').textContent = STYLES[style].desc;
+}
+function setSensUI(){
+  document.querySelectorAll('#sensChips .chip').forEach(c => c.setAttribute('aria-checked', Math.abs(parseFloat(c.dataset.sens) - sens) < .01));
+}
+const pct = v => (v*100).toFixed(0)+'%';
+function uiTick(){
+  $('mLoud').style.width = pct(meters.loud);
+  $('mClap').style.width = pct(meters.clap);
+  $('mCrowd').style.width = pct(meters.crowd);
+  $('mMove').style.width = pct(camOn ? moveVal : 0);
+  $('mMusic').style.width = pct(music);
+  $('mEnergy').style.width = pct(energy);
+  $('bpm').textContent = Math.round(bpm);
+  const now = performance.now();
+  $('bpmSrc').textContent = now < tapLockUntil ? 'Tempo réglé au doigt'
+    : bpmSource === 'ear' ? 'Tempo détecté à l’oreille' : 'Tempo de départ du style';
+  let h = '';
+  if (paused) h = 'Pause prédication : la batterie ne se relancera pas toute seule.';
+  else if (!autoMode) h = 'Mode automatique coupé : vous pilotez la batterie.';
+  else if (now < holdUntil) h = `Commande manuelle : retour en automatique dans ${Math.ceil((holdUntil-now)/1000)} s.`;
+  else if (running) h = 'La batterie suit l’ambiance toute seule.';
+  $('hold').textContent = h;
+}
+setInterval(uiTick, 200);
+
+/* ---------- Sons de batterie ---------- */
+async function ensureAudio(){
+  if (!ctx){
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -12; comp.ratio.value = 4;
+    master = ctx.createGain(); master.gain.value = $('vol').value/100;
+    drumBus = ctx.createGain();
+    drumBus.connect(master).connect(comp).connect(ctx.destination);
+    noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i=0;i<d.length;i++) d[i] = Math.random()*2-1;
+  }
+  if (ctx.state === 'suspended') await ctx.resume();
+}
+function envelope(g,t,peak,dec){
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(Math.max(peak,0.0002),t+0.003);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dec);
+}
+function noise(t,dur,type,freq,q){
+  const s = ctx.createBufferSource(); s.buffer = noiseBuf;
+  const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq; if (q) f.Q.value = q;
+  s.connect(f); s.start(t); s.stop(t+dur);
+  return f;
+}
+function tone(t,type,f1,f2,glide,peak,dec){
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type; o.frequency.setValueAtTime(f1,t);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2,t+glide);
+  envelope(g,t,peak,dec); o.connect(g).connect(drumBus); o.start(t); o.stop(t+dec+0.02);
+}
+const INST = {
+  kick:(t,v)=>tone(t,'sine',140,42,.13,v,.38),
+  snare:(t,v)=>{ const g=ctx.createGain(); envelope(g,t,v*.55,.17); noise(t,.2,'highpass',1400).connect(g).connect(drumBus); tone(t,'triangle',200,0,0,v*.4,.09); },
+  ghost:(t,v)=>INST.snare(t,v*.35),
+  hat:(t,v,dec=.045)=>{ const g=ctx.createGain(); envelope(g,t,v*.28,dec); noise(t,dec+.02,'highpass',7500).connect(g).connect(drumBus); },
+  ohat:(t,v)=>INST.hat(t,v,.28),
+  shaker:(t,v)=>{ const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(v*.22,t+.02); g.gain.exponentialRampToValueAtTime(0.0001,t+.1); noise(t,.12,'bandpass',5500,.9).connect(g).connect(drumBus); },
+  clap:(t,v)=>{ const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t);
+    for (let k=0;k<3;k++){ g.gain.setValueAtTime(v*.6,t+k*.011); g.gain.exponentialRampToValueAtTime(v*.05+.0002,t+k*.011+.009); }
+    g.gain.setValueAtTime(v*.6,t+.033); g.gain.exponentialRampToValueAtTime(0.0001,t+.2);
+    noise(t,.22,'bandpass',1400,.9).connect(g).connect(drumBus); },
+  djembe:(t,v)=>{ tone(t,'sine',190,120,.08,v*.75,.2); const g=ctx.createGain(); envelope(g,t,v*.18,.035); noise(t,.05,'bandpass',2500,1).connect(g).connect(drumBus); },
+  slap:(t,v)=>{ tone(t,'sine',330,260,.04,v*.35,.09); const g=ctx.createGain(); envelope(g,t,v*.5,.045); noise(t,.06,'bandpass',3200,1.2).connect(g).connect(drumBus); },
+  tom:(t,v)=>tone(t,'sine',150,95,.2,v*.7,.3),
+  rim:(t,v)=>tone(t,'triangle',1700,0,0,v*.3,.035),
+  crash:(t,v)=>{ const g=ctx.createGain(); g.gain.setValueAtTime(v*.25,t); g.gain.exponentialRampToValueAtTime(0.0001,t+1.4); noise(t,1.45,'highpass',4500).connect(g).connect(drumBus); }
+};
+
+/* ---------- Le batteur ---------- */
+function applyLevel(){
+  if (target !== level){ justEntered = target > level; level = target; setLevelUI(); }
+  else justEntered = false;
+}
+function playStep(s,t){
+  const st = STYLES[style];
+  const filling = target > level && s >= 12;
+  if (level >= 2 || filling){
+    const g = GAIN[Math.max(level,2)];
+    if (s === 0 && ((justEntered && level >= 4) || (level === 5 && bar % 4 === 0))) INST.crash(t,.7);
+    for (const [ins,min,p] of st.tracks){
+      if (min > level) continue;
+      const v = VEL[p[s]]; if (!v) continue;
+      if (filling && (ins==='snare' || ins==='clap' || ins==='ghost')) continue;
+      INST[ins](t, v*g);
+    }
+    if (filling){
+      const v = (.45 + .17*(s-12)) * GAIN[Math.max(target,2)];
+      (s % 2 === 0 ? INST.snare : INST[st.fill])(t, v);
+    }
+    if (s % 4 === 0){
+      const d = Math.max(0,(t - ctx.currentTime)*1000);
+      setTimeout(() => { drum.classList.add('beat'); setTimeout(() => drum.classList.remove('beat'), 110); }, d);
+    }
+  }
+}
+function startScheduler(){
+  step = 0; bar = 0; nextTime = ctx.currentTime + .08;
+  schedTimer = setInterval(() => {
+    while (nextTime < ctx.currentTime + .12){
+      playStep(step, nextTime);
+      nextTime += 60 / bpm / 4;
+      step = (step + 1) % 16;
+      if (step === 0){ bar++; applyLevel(); }
+    }
+  }, 25);
+}
+function setTarget(l, manual){
+  target = Math.min(5, Math.max(1, l));
+  if (manual) holdUntil = autoMode ? performance.now() + 15000 : Infinity;
+  if (!running){ level = target; setLevelUI(); }
+}
+
+/* ---------- L'oreille ---------- */
+function levelFor(e){
+  const TH = [.18,.36,.55,.74], h = .035;
+  let l = target;
+  while (l < 5 && e > TH[l-1] + h) l++;
+  while (l > 1 && e < TH[l-2] - h) l--;
+  return l;
+}
+function feed(raw, now){
+  energy += (raw - energy) * (raw > energy ? .02 : .012);
+  if (autoMode && !paused && performance.now() > holdUntil){
+    const cand = levelFor(energy);
+    if (cand !== lastCand){ lastCand = cand; candSince = now; }
+    if (cand !== target && now - candSince > 1.5) setTarget(cand, false);
+  }
+}
+function analyze(){
+  const now = performance.now()/1000;
+  analyser.getFloatTimeDomainData(tbuf);
+  let sq = 0; for (let i=0;i<tbuf.length;i++) sq += tbuf[i]*tbuf[i];
+  const db = 20*Math.log10(Math.sqrt(sq/tbuf.length) + 1e-8);
+  analyser.getFloatFrequencyData(fbuf);
+  const binHz = ctx.sampleRate / analyser.fftSize;
+  let flux = 0, hflux = 0, logSum = 0, linSum = 0, n = 0;
+  for (let i=1;i<fbuf.length;i++){
+    const m = isFinite(fbuf[i]) ? Math.pow(10, fbuf[i]/20) : 0;
+    const f = i*binHz, d = m - prev[i]; prev[i] = m;
+    if (f < 8000 && d > 0){ flux += d; if (f > 2000) hflux += d; }
+    if (f > 200 && f < 4000){ logSum += Math.log(m + 1e-9); linSum += m; n++; }
+  }
+  const flat = Math.exp(logSum/n) / (linSum/n + 1e-9);
+
+  envVals.push(Math.log(1 + 50*flux)); envTimes.push(now);
+  if (envVals.length > 300){ envVals.shift(); envTimes.shift(); }
+
+  if (calibrating){
+    calibDbs.push(db);
+    if (now - calibStart > 4){
+      const sorted = calibDbs.slice().sort((a,b)=>a-b);
+      floorDb = sorted[Math.floor(sorted.length*.3)];
+      peakDb = floorDb + 28;
+      calibrating = false;
+      status('C’est prêt : la batterie écoute la salle. Tapez le tempo 4 fois en rythme pour la caler sur le chant.');
+    }
+    return;
+  }
+
+  if (db < floorDb) floorDb += (db - floorDb) * .05; else floorDb += .002;
+  if (db > peakDb) peakDb = db; else peakDb -= .004;
+  if (peakDb < floorDb + 18) peakDb = floorDb + 18;
+  const loud = clamp((db - floorDb) / (peakDb - floorDb));
+  lastLoud = loud;
+
+  hHist.push(hflux); if (hHist.length > 45) hHist.shift();
+  const mean = hHist.reduce((a,b)=>a+b,0)/hHist.length;
+  const sd = Math.sqrt(hHist.reduce((a,b)=>a+(b-mean)**2,0)/hHist.length);
+  if (hflux > mean + 2*sd && hflux > .01 && now - lastClap > .12 && loud > .08){ clapTimes.push(now); lastClap = now; }
+  clapTimes = clapTimes.filter(x => x > now - 2);
+  const clap = clamp(clapTimes.length / 2 / 4);
+  const crowd = clamp((flat - .03) / .25) * Math.min(1, loud*2);
+  const move = camOn ? moveVal : 0;
+
+  meters = {loud, clap, crowd, move};
+  const base = camOn
+    ? .45*loud + .22*clap + .13*crowd + .2*move
+    : .55*loud + .27*clap + .18*crowd;
+  // Sans rythme (pleurs, cris, paroles), l'ambiance ne peut pas monter bien haut.
+  feed(clamp(base * (.45 + .55*music) * sens), now);
+}
+function estimateTempo(){
+  if (envVals.length < 150) return;
+  const N = envVals.length, st = STYLES[style];
+  const dt = (envTimes[N-1] - envTimes[0]) / (N-1);
+  const m = envVals.reduce((a,b)=>a+b,0)/N;
+  const x = envVals.map(v => v - m);
+  let r0 = 0; for (const v of x) r0 += v*v; r0 /= N;
+  let best = 0, bestB = 0;
+  for (let b=60;b<=180;b++){
+    const lag = 60/b/dt, li = Math.floor(lag), fr = lag - li;
+    let r = 0;
+    for (let i=0;i+li+1<N;i++) r += x[i]*(x[i+li]*(1-fr) + x[i+li+1]*fr);
+    r /= (N - li);
+    r *= Math.exp(-.5*Math.pow(Math.log2(b/st.bpm)/.6, 2));
+    if (r > best){ best = r; bestB = b; }
+  }
+  const conf = r0 > 0 ? best/r0 : 0;
+  let mt = clamp((conf - .08) / .25);
+  if (lastLoud < .1) mt *= .3;
+  music += (mt - music) * .4;
+  if (performance.now() < tapLockUntil || lastLoud < .12) return;
+  if (conf > .15){
+    let nb = bestB;
+    while (nb < st.min) nb *= 2;
+    while (nb > st.max) nb /= 2;
+    bpm += (nb - bpm) * .3; bpmSource = 'ear';
+  }
+}
+
+/* ---------- Les yeux (caméra) ---------- */
+const canvas = document.createElement('canvas'); canvas.width = 64; canvas.height = 48;
+const c2d = canvas.getContext('2d', {willReadFrequently:true});
+function camTick(){
+  const v = $('cam');
+  if (v.readyState < 2) return;
+  c2d.drawImage(v, 0, 0, 64, 48);
+  const d = c2d.getImageData(0, 0, 64, 48).data;
+  const gray = new Float32Array(64*48);
+  for (let i=0,j=0;i<d.length;i+=4,j++) gray[j] = (d[i]+d[i+1]+d[i+2])/765;
+  if (prevFrame){
+    let diff = 0;
+    for (let j=0;j<gray.length;j++) diff += Math.abs(gray[j]-prevFrame[j]);
+    diff /= gray.length;
+    moveVal += (clamp((diff - .006) / .05) - moveVal) * .3;
+  }
+  prevFrame = gray;
+}
+async function toggleCam(){
+  const btn = $('camBtn'), v = $('cam');
+  if (camOn){
+    clearInterval(camTimer);
+    if (vStream) vStream.getTracks().forEach(t => t.stop());
+    vStream = null; camOn = false; moveVal = 0; prevFrame = null;
+    v.classList.remove('on'); btn.setAttribute('aria-pressed','false'); btn.textContent = 'Activer la caméra';
+    return;
+  }
+  try {
+    vStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}, width:{ideal:320}, height:{ideal:240}}, audio:false});
+  } catch(e){
+    status('La caméra n’a pas pu s’ouvrir. Autorisez l’accès à la caméra dans le navigateur ; la batterie continue de fonctionner avec le micro seul.');
+    return;
+  }
+  v.srcObject = vStream; await v.play().catch(()=>{});
+  camOn = true; camTimer = setInterval(camTick, 120);
+  v.classList.add('on'); btn.setAttribute('aria-pressed','true'); btn.textContent = 'Couper la caméra';
+}
+
+/* ---------- Démo sans micro ---------- */
+const DEMO = [[10,'Démo : le chantre commence seul.'],[25,'Démo : quelques voix le suivent.'],
+  [40,'Démo : l’assemblée reprend et tape des mains.'],[55,'Démo : toute la salle danse.'],[70,'Démo : le chant se termine doucement.']];
+function demoTick(){
+  demoT += .023;
+  const c = demoT % 70;
+  let e;
+  if (c < 10) e = .08;
+  else if (c < 40) e = .08 + .87*((c-10)/30);
+  else if (c < 55) e = .95;
+  else if (c < 62) e = .95 - .8*((c-55)/7);
+  else e = .15;
+  const r = () => (Math.random()-.5)*.08;
+  meters = {loud:clamp(e*.9+r()), clap:clamp(c>25&&c<58 ? e*.8+r() : .05), crowd:clamp(c>10 ? e*.85+r() : .05), move:0};
+  music = clamp(c > 10 && c < 60 ? .85 : .2);
+  status(DEMO.find(([lim]) => c < lim)[1]);
+  feed(clamp(e + r()), performance.now()/1000);
+}
+
+/* ---------- Écran allumé ---------- */
+async function keepAwake(){
+  try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (running && document.visibilityState === 'visible') keepAwake();
+});
+
+/* ---------- Démarrer / arrêter ---------- */
+function resetEars(){
+  energy = 0; music = 0; lastCand = 1; candSince = 0; envVals = []; envTimes = []; hHist = []; clapTimes = [];
+  floorDb = -60; peakDb = -30; target = 1; level = 1;
+  holdUntil = autoMode ? 0 : Infinity; setLevelUI();
+}
+async function startMic(){
+  try {
+    await ensureAudio();
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('micro');
+    stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:false, autoGainControl:false}});
+  } catch(e){
+    status('Le micro n’a pas pu s’ouvrir. Autorisez l’accès au micro dans votre navigateur, ou lancez la démo pour voir comment la batterie réagit.');
+    return;
+  }
+  const src = ctx.createMediaStreamSource(stream);
+  analyser = ctx.createAnalyser(); analyser.fftSize = 2048; analyser.smoothingTimeConstant = 0;
+  src.connect(analyser);
+  tbuf = new Float32Array(analyser.fftSize); fbuf = new Float32Array(analyser.frequencyBinCount); prev = new Float32Array(analyser.frequencyBinCount);
+  resetEars(); running = true; mode = 'mic';
+  calibrating = true; calibStart = performance.now()/1000; calibDbs = [];
+  startScheduler();
+  anaTimer = setInterval(analyze, 23);
+  tempoTimer = setInterval(estimateTempo, 1000);
+  keepAwake();
+  document.body.classList.add('live');
+  $('goBtn').textContent = 'Arrêter';
+  status('Calibrage : laissez la salle comme elle est pendant 4 secondes…');
+}
+async function startDemo(){
+  await ensureAudio();
+  resetEars(); running = true; mode = 'demo'; demoT = 0;
+  if (performance.now() >= tapLockUntil){ bpm = STYLES[style].bpm; bpmSource = 'style'; }
+  startScheduler();
+  anaTimer = setInterval(demoTick, 23);
+  keepAwake();
+  document.body.classList.add('live');
+  $('demoBtn').textContent = 'Arrêter la démo';
+}
+function stop(){
+  clearInterval(schedTimer); clearInterval(anaTimer); clearInterval(tempoTimer);
+  if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; }
+  if (wakeLock){ wakeLock.release().catch(()=>{}); wakeLock = null; }
+  running = false; mode = null; calibrating = false;
+  target = 1; level = 1; energy = 0; music = 0; meters = {loud:0, clap:0, crowd:0, move:0}; setLevelUI();
+  document.body.classList.remove('live');
+  $('goBtn').textContent = 'Démarrer l’écoute';
+  $('demoBtn').textContent = 'Essayer sans micro';
+  status('Batterie arrêtée.');
+}
+
+/* ---------- Pause prédication ---------- */
+function setPause(on){
+  paused = on;
+  const btn = $('cutBtn');
+  btn.setAttribute('aria-pressed', on);
+  btn.textContent = on ? 'Reprendre la louange' : 'Pause prédication';
+  if (on){
+    autoMode = false; $('auto').checked = false;
+    setTarget(1, true);
+  } else {
+    autoMode = true; $('auto').checked = true; holdUntil = 0;
+  }
+  setLevelUI();
+}
+
+/* ---------- Boutons ---------- */
+$('goBtn').addEventListener('click', () => running ? stop() : startMic());
+$('demoBtn').addEventListener('click', () => {
+  if (running && mode === 'demo'){ stop(); return; }
+  if (running) stop();
+  startDemo();
+});
+$('camBtn').addEventListener('click', toggleCam);
+document.querySelectorAll('#chips .chip').forEach(c => c.addEventListener('click', () => {
+  style = c.dataset.style; store.set('tv-style', style);
+  const st = STYLES[style];
+  if (bpmSource === 'style' && performance.now() >= tapLockUntil) bpm = st.bpm;
+  else { while (bpm < st.min) bpm *= 2; while (bpm > st.max) bpm /= 2; }
+  setStyleUI();
+}));
+document.querySelectorAll('#sensChips .chip').forEach(c => c.addEventListener('click', () => {
+  sens = parseFloat(c.dataset.sens); store.set('tv-sens', String(sens)); setSensUI();
+}));
+function flash(btn){ btn.classList.add('flash'); setTimeout(() => btn.classList.remove('flash'), 140); }
+$('upBtn').addEventListener('click', e => { if (paused) setPause(false); setTarget(target+1, true); flash(e.currentTarget); });
+$('downBtn').addEventListener('click', e => { if (paused) setPause(false); setTarget(target-1, true); flash(e.currentTarget); });
+$('cutBtn').addEventListener('click', e => { setPause(!paused); flash(e.currentTarget); });
+$('tapBtn').addEventListener('click', e => {
+  flash(e.currentTarget);
+  const now = performance.now();
+  taps = taps.filter(x => now - x < 3000); taps.push(now);
+  if (taps.length >= 3){
+    const iv = (taps[taps.length-1] - taps[0]) / (taps.length-1);
+    bpm = Math.min(180, Math.max(50, 60000/iv));
+    tapLockUntil = now + 30000;
+    // Caler les coups de la batterie sur le dernier appui.
+    if (running && ctx){
+      const beat = 60 / bpm, sps = beat / 4;
+      const tapCtx = ctx.currentTime;
+      const nextBeat = nextTime + ((4 - step % 4) % 4) * sps;
+      let err = (nextBeat - tapCtx) % beat;
+      if (err < 0) err += beat;
+      if (err > beat/2) err -= beat;
+      nextTime -= err;
+      if (nextTime < ctx.currentTime) nextTime += sps * Math.ceil((ctx.currentTime - nextTime) / sps);
+    }
+  }
+});
+$('auto').addEventListener('change', e => {
+  autoMode = e.target.checked;
+  if (autoMode && paused) setPause(false);
+  holdUntil = autoMode ? 0 : Infinity;
+});
+$('vol').addEventListener('input', e => { if (master) master.gain.value = e.target.value/100; });
+
+setStyleUI(); setSensUI(); setLevelUI(); uiTick();
+})();
+</script>
+</body>
+</html>
